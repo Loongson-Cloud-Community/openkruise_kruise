@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.15 as builder
+FROM cr.loongnix.cn/library/golang:1.15-alpine as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -21,8 +21,9 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -mod=vendor -a -o manager main.go \
   && CGO_ENABLED=0 GO111MODULE=on go build -mod=vendor -a -o daemon ./cmd/daemon/main.go
 
 # Use Ubuntu 20.04 LTS as base image to package the manager binary
-FROM ubuntu:focal
+FROM cr.loongnix.cn/loongson/loongnix:20
 # This is required by daemon connnecting with cri
+RUN bash -c "rm -f /usr/sbin/{ip,lsmod,traceroute,udevadm}"  
 RUN ln -s /usr/bin/* /usr/sbin/ && apt-get update -y \
   && apt-get install --no-install-recommends -y ca-certificates \
   && apt-get clean && rm -rf /var/log/*log /var/lib/apt/lists/* /var/log/apt/* /var/lib/dpkg/*-old /var/cache/debconf/*-old
